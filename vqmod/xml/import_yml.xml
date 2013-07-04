@@ -1,0 +1,28 @@
+<modification>
+	<id>Import YML</id>
+	<version>1.5.3.x</version>
+	<vqmver>1.1.0</vqmver>
+	<author></author>
+	<file name="admin/controller/common/header.php">
+		<operation>
+			<search position="after"><![CDATA[$this->data['text_backup'] = $this->language->get('text_backup');]]></search>
+			<add><![CDATA[		$this->data['text_import_yml'] = $this->language->get('text_import_yml');]]></add>
+		</operation>
+		<operation>
+			<search position="after"><![CDATA[$this->data['backup'] = $this->url->link('tool/backup', 'token=' . $this->session->data['token'], 'SSL');]]></search>
+			<add><![CDATA[			$this->data['import_yml'] = $this->url->link('tool/import_yml', 'token=' . $this->session->data['token'], 'SSL');]]></add>
+		</operation>
+	</file>
+	<file name="admin/language/russian/common/header.php">
+		<operation>
+			<search position="after"><![CDATA[$_['text_backup']]]></search>
+			<add><![CDATA[$_['text_import_yml']           = 'Import YML';]]></add>
+		</operation>
+	</file>
+	<file name="admin/view/template/common/header.tpl">
+		<operation>
+			<search position="after"><![CDATA[<li><a href="<?php echo $backup; ?>"><?php echo $text_backup; ?></a></li>]]></search>
+			<add><![CDATA[        <li><a href="<?php echo $import_yml; ?>"><?php echo $text_import_yml; ?></a></li>]]></add>
+		</operation>
+	</file>
+</modification>
