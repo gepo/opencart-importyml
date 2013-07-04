@@ -7,6 +7,7 @@ class ControllerToolImportYml extends Controller {
         $this->load->language('tool/import_yml');
 		$this->document->setTitle($this->language->get('heading_title'));
         $this->load->model('tool/import_yml');
+        $this->load->model('catalog/product');
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && ($this->validate())) {
 
@@ -104,7 +105,7 @@ class ControllerToolImportYml extends Controller {
         }
 
         foreach ($offers->offer as $offer) {
-            $image = null;
+            $image_path = null;
             if (is_dir(DIR_IMAGE . 'data/import_yml')) {
                 $img_name = substr(strrchr($offer->picture, '/'), 1);
     
@@ -116,19 +117,55 @@ class ControllerToolImportYml extends Controller {
                 }
             }
 
-            $data = array(
-                'product_id'  => $offer['id'],
-                'category_id' => $offer->categoryId,
-                'model'      => $offer->vendorCode,
-                'price'      => $offer->price,
-                'image'      => $image_path,
-                'name'       => $offer->name,
-                'description' => $offer->description,
-                'stock_status_id' => 7,
-                'status' => ($offer['available'] == 'true')? 1:0
-            );
-            
-            $this->model_tool_import_yml->addProduct($data);
+$data = array(
+                'product_description' => array ( 
+                    1 => array (
+                        'name' => $offer->name,
+                        'meta_keyword' => '',
+                        'meta_description' => '',
+                        'description' => $offer->description,
+                        'tag' => '',
+                        'seo_title' => '',
+                        'seo_h1' => '',
+                    )
+                ),
+                'product_special' => array (),
+                'product_store' => array(0),
+                'main_category_id' => $offer->categoryId,
+                'product_category' => array (
+                    $offer->categoryId,
+                ),
+                'model' => $offer->vendorCode,
+                'image' => $image_path,
+                'sku'   => $offer->vendorCode,
+                'keyword' => $offer->vendorCode,
+                'upc'  => '',
+                'ean'  => '',
+                'jan'  => '',
+                'isbn' => '',
+                'mpn'  => '',
+                'location' => '',
+                'quantity' => '',
+                'minimum' => '',
+                'subtract' => '',
+                'stock_status_id' => ($offer['available'] == 'true')? 7:8,
+                'date_available' => '',
+                'manufacturer_id' => '',
+                'shipping' => 1,
+                'price' => (float)$offer->price,
+                'points' => '',
+                'weight' => '', 
+                'weight_class_id' => '',
+                'length' => '',
+                'width' => '',
+                'height' => '',
+                'length_class_id' => '',
+                'status' => '1',
+                'tax_class_id' => '',
+                'sort_order' => '',
+           );
+
+           $this->model_catalog_product->addProduct($data); 
         }
     }
 
@@ -140,7 +177,8 @@ class ControllerToolImportYml extends Controller {
             $options = array(CURLOPT_FILE => $fp,
                              CURLOPT_HEADER => 0,
                              //CURLOPT_FOLLOWLOCATION => 1,
-                             CURLOPT_TIMEOUT => 60);
+                             CURLOPT_TIMEOUT => 60,
+                        );
 
             curl_setopt_array($ch, $options);
 
