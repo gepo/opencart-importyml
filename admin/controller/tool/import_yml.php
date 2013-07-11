@@ -101,7 +101,7 @@ class ControllerToolImportYml extends Controller {
 		while (count($categoriesList) > 0) {
 			foreach ($categoriesList as $source_category_id => $item) {
 				if (array_key_exists((int)$item['parent_id'], $this->categoryMap)) {
-					$category = $this->db->query('SELECT * FROM `category` INNER JOIN `category_description` ON `category_description`.category_id = category.category_id WHERE parent_id = ' . (int)$this->categoryMap[$item['parent_id']] . ' AND `category_description`.name LIKE "' . $this->db->escape($item['name']) . '"');
+					$category = $this->db->query('SELECT * FROM `' . DB_PREFIX . 'category` INNER JOIN `' . DB_PREFIX . 'category_description` ON `' . DB_PREFIX . 'category_description`.category_id = `' . DB_PREFIX . 'category`.category_id WHERE parent_id = ' . (int)$this->categoryMap[$item['parent_id']] . ' AND `' . DB_PREFIX . 'category_description`.name LIKE "' . $this->db->escape($item['name']) . '"');
 					
 					if ($category->row) {
 						$this->categoryMap[(int)$source_category_id] = $category->row['category_id'];
@@ -127,10 +127,10 @@ class ControllerToolImportYml extends Controller {
 
     private function addProducts($offers) 
     {
-        $this->model_tool_import_yml->deleteProducts();
+        //$this->model_tool_import_yml->deleteProducts();
 
 		// get first attribute group
-		$res = $this->db->query('SELECT * FROM `attribute_group` ORDER BY `attribute_group_id` LIMIT 0, 1');
+		$res = $this->db->query('SELECT * FROM `' . DB_PREFIX  . 'attribute_group` ORDER BY `attribute_group_id` LIMIT 0, 1');
 		if (!$res->row) {
 			$attr_group_data = array (
 				'sort_order' => 0,
@@ -271,7 +271,12 @@ class ControllerToolImportYml extends Controller {
 				}
 			}
 			
-            $this->model_catalog_product->addProduct($data); 
+			$result = $this->db->query('SELECT product_id FROM `' . DB_PREFIX . 'product` WHERE `sku` LIKE "' . $data['sku'] . '"');
+			if ($result->row) {
+				$this->model_catalog_product->editProduct($result->row['product_id'], $data); 
+			} else {
+				$this->model_catalog_product->addProduct($data); 
+			}
         }
     }
 
