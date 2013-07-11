@@ -54,33 +54,36 @@ class ModelToolImportYml extends Model {
 	
 	public function addCategory($data) {
         $this->db->query("INSERT INTO " . DB_PREFIX . "category 
-                            SET `category_id` = '" . (int)$data['category_id'] . "',
-                                `parent_id`   = '" . (int)$data['parent_id'] . "',
+                            SET `parent_id`   = '" . (int)$data['parent_id'] . "',
 								`top`         = '" . (int)$data['top'] . "',
                                 `status` = 1,
                                 `date_modified` = NOW(), 
                                 `date_added` = NOW()
                         ");
-
+		$categoryId = $this->db->getLastId();
+		
         $this->db->query("INSERT INTO " . DB_PREFIX . "category_description 
-                            SET `category_id` = '" . (int)$data['category_id'] . "',
+                            SET `category_id` = '" . (int)$categoryId . "',
                                 `language_id` = 1,
                                 `name` = '". $this->db->escape(trim($data['name'])) ."'
                         ");
 
         $this->db->query("INSERT INTO " . DB_PREFIX . "category_to_store 
-                            SET `category_id` = '" . (int)$data['category_id'] . "',
+                            SET `category_id` = '" . (int)$categoryId . "',
                                 `store_id`    = '0'
                         ");
 
+		return $categoryId;
     }
 
+	/*
     public function deleteCategories() {
         $this->db->query("TRUNCATE TABLE  `category`");
         $this->db->query("TRUNCATE TABLE  `category_description`");
         $this->db->query("TRUNCATE TABLE  `category_to_store`");
     }
-
+	*/
+	
     public function deleteProducts() {
         $this->db->query("TRUNCATE TABLE  `product`");
         $this->db->query("TRUNCATE TABLE  `product_attribute`");

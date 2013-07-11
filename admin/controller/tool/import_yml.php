@@ -2,6 +2,8 @@
 class ControllerToolImportYml extends Controller { 
 	private $error = array();
 	
+	private $categoryMap = array();
+	
 	public function index() 
     {
         $this->load->language('tool/import_yml');
@@ -82,22 +84,44 @@ class ControllerToolImportYml extends Controller {
 
     private function addCategories($categories) 
     {
-        $this->model_tool_import_yml->deleteCategories();
-
+		$this->categoryMap = array(
+			0 => 0
+		);
+		
+		$categoriesList = array();
+		
         foreach ($categories->category as $category) {
-            $data = array(
-                'category_id' => $category['id'],
-                'parent_id'   => $category['parentId'],
-                'name'        => $category,
-				'top'         => 0
+            $categoriesList[ (string)$category['id'] ] = array(
+                'parent_id'   => (int)$category['parentId'],
+                'name'        => trim((string)$category)
             );
-
-			if ($data['parent_id'] == 0) {
-				$data['top'] = 1;
+		}
+		
+		// Compare categories level by level and create new one, if it doesn't exist
+		while (count($categoriesList) > 0) {
+			foreach ($categoriesList as $source_category_id => $item) {
+				if (array_key_exists((int)$item['parent_id'], $this->categoryMap)) {
+					$category = $this->db->query('SELECT * FROM `category` INNER JOIN `category_description` ON `category_description`.category_id = category.category_id WHERE parent_id = ' . (int)$this->categoryMap[$item['parent_id']] . ' AND `category_description`.name LIKE "' . $this->db->escape($item['name']) . '"');
+					
+					if ($category->row) {
+						$this->categoryMap[(int)$source_category_id] = $category->row['category_id'];
+					} else {
+						$category_data = array (
+							'sort_order' => 0,
+							'name' => $item['name'],
+							'parent_id' => $this->categoryMap[ (int)$item['parent_id'] ],
+							'top' => 0,
+						);
+						
+						if ($category_data['parent_id'] == 0) {
+							$category_data['top'] = 1;
+						}
+				
+						$this->categoryMap[(int)$source_category_id] = $this->model_tool_import_yml->addCategory($category_data);
+					}
+					unset($categoriesList[$source_category_id]);
+				}
 			}
-			
-			// Can't use admin/model/catalog/category because we need to set specific category_id
-            $this->model_tool_import_yml->addCategory($data);
         }
     }
 
@@ -160,9 +184,9 @@ class ControllerToolImportYml extends Controller {
                 ),
                 'product_special' => array (),
                 'product_store' => array(0),
-                'main_category_id' => $offer->categoryId,
+                'main_category_id' => $this->categoryMap[(int)$offer->categoryId],
                 'product_category' => array (
-                    $offer->categoryId,
+                    $this->categoryMap[(int)$offer->categoryId],
                 ),
 				'product_attribute' => array(),
                 'model' => $offer->vendorCode,
