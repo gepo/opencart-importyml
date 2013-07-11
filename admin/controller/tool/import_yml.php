@@ -8,6 +8,9 @@ class ControllerToolImportYml extends Controller {
 		$this->document->setTitle($this->language->get('heading_title'));
         $this->load->model('tool/import_yml');
         $this->load->model('catalog/product');
+		$this->load->model('catalog/manufacturer');
+		$this->load->model('catalog/attribute');
+		$this->load->model('catalog/attribute_group');
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && ($this->validate())) {
 
@@ -85,9 +88,15 @@ class ControllerToolImportYml extends Controller {
             $data = array(
                 'category_id' => $category['id'],
                 'parent_id'   => $category['parentId'],
-                'name'        => $category
+                'name'        => $category,
+				'top'         => 0
             );
 
+			if ($data['parent_id'] == 0) {
+				$data['top'] = 1;
+			}
+			
+			// Can't use admin/model/catalog/category because we need to set specific category_id
             $this->model_tool_import_yml->addCategory($data);
         }
     }
@@ -96,6 +105,22 @@ class ControllerToolImportYml extends Controller {
     {
         $this->model_tool_import_yml->deleteProducts();
 
+		// get first attribute group
+		$res = $this->db->query('SELECT * FROM `attribute_group` ORDER BY `attribute_group_id` LIMIT 0, 1');
+		if (!$res->row) {
+			$attr_group_data = array (
+				'sort_order' => 0,
+				'attribute_group_description' => array (
+					1 => array (
+						'name' => 'Basic',
+					),
+				)
+			);
+			$attrGroupId = $this->model_catalog_attribute_group->addAttributeGroup($attr_group_data);
+		} else {
+			$attrGroupId = (int)$res->row['attribute_group_id'];
+		}
+		
         if (is_dir(DIR_IMAGE . 'data/import_yml')) {
             $this->rrmdir(DIR_IMAGE . 'data/import_yml');
         }
@@ -104,6 +129,10 @@ class ControllerToolImportYml extends Controller {
             mkdir(DIR_IMAGE . 'data/import_yml');
         }
 
+		$vendorMap = $this->model_tool_import_yml->loadManufactures();
+		
+		$attrMap = $this->model_tool_import_yml->loadAttributes();
+		
         foreach ($offers->offer as $offer) {
             $image_path = null;
             if (is_dir(DIR_IMAGE . 'data/import_yml')) {
@@ -116,8 +145,8 @@ class ControllerToolImportYml extends Controller {
                     }
                 }
             }
-
-$data = array(
+			
+			$data = array(
                 'product_description' => array ( 
                     1 => array (
                         'name' => $offer->name,
@@ -135,6 +164,7 @@ $data = array(
                 'product_category' => array (
                     $offer->categoryId,
                 ),
+				'product_attribute' => array(),
                 'model' => $offer->vendorCode,
                 'image' => $image_path,
                 'sku'   => $offer->vendorCode,
@@ -165,7 +195,59 @@ $data = array(
                 'sort_order' => '',
            );
 
-           $this->model_catalog_product->addProduct($data); 
+		   if (isset($offer->vendor)) {
+				$vendor_name = (string)$offer->vendor;
+				
+				if (!isset($vendorMap[$vendor_name])) {
+					$manufacturer_data = array (
+						'name' => $vendor_name,
+						'sort_order' => 0,
+						'manufacturer_description' => array (
+						),
+						'manufacturer_store' => array ( 0 ),
+					);
+					
+					$vendorMap[$vendor_name] = $this->model_tool_import_yml->addManufacturer($manufacturer_data);
+				}
+				
+				$data['manufacturer_id'] = $vendorMap[(string)$offer->vendor];
+			}
+			
+			if (isset($offer->param)) {
+				if (!is_array($offer->param)) {
+					$offer->param = array($offer->param);
+				}
+				
+				foreach ($offer->param as $param) {
+					$attr_name = (string)$param['name'];
+					$attr_value = (string)$param;
+					
+					if (array_key_exists($attr_name, $attrMap) === false) {
+						$attr_data = array (
+							'sort_order' => 0,
+							'attribute_group_id' => $attrGroupId,
+							'attribute_description' => array (
+								1 => array (
+									'name' => $attr_name,
+								)
+							),
+						);
+						
+						$attrMap[$attr_name] = $this->model_tool_import_yml->addAttribute($attr_data);
+					}
+					
+					$data['product_attribute'][] = array (
+						'attribute_id' => $attrMap[$attr_name],
+						'product_attribute_description' => array (
+							1 => array (
+								'text' => $attr_value,
+							)
+						)
+					);
+				}
+			}
+			
+            $this->model_catalog_product->addProduct($data); 
         }
     }
 
