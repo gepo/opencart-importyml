@@ -26,6 +26,10 @@
             <td width="25%"><?php echo $entry_restore; ?></td>
             <td><input type="file" name="upload" /></td>
           </tr>
+		  <tr>
+		    <td width="25%"><?php echo $entry_force; ?></td>
+			<td><input type="checkbox" name="force" /></td>
+		  </tr>
         </table>
       </form>
     </div>

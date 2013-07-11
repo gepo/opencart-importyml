@@ -89,18 +89,17 @@ class ModelToolImportYml extends Model {
 	}
 	
 	public function loadAttributes() {
-		$attributes = $this->db->query('SELECT * FROM `' . DB_PREFIX  . 'attribute` INNER JOIN `attribute_description` ON `attribute_description`.attribute_id = `attribute`.attribute_id WHERE language_id = 1');
+		$attributes = $this->db->query('SELECT * FROM `' . DB_PREFIX  . 'attribute` INNER JOIN `' . DB_PREFIX  . 'attribute_description` ON `' . DB_PREFIX  . 'attribute_description`.attribute_id = `' . DB_PREFIX  . 'attribute`.attribute_id WHERE language_id = 1');
 		
 		$result = array();
 		
 		foreach ($attributes->rows as $item) {
-			$result[ $item['name'] ] = $item['attribute_idyy'];
+			$result[ $item['name'] ] = $item['attribute_id'];
 		}
 		
 		return $result;
 	}
 	
-	/*
 	public function deleteCategories() {
         $this->db->query("TRUNCATE TABLE  `" . DB_PREFIX  . "category`");
         $this->db->query("TRUNCATE TABLE  `" . DB_PREFIX  . "category_description`");
@@ -139,6 +138,5 @@ class ModelToolImportYml extends Model {
 		$this->db->query("TRUNCATE TABLE  `" . DB_PREFIX  . "attribute_group`");
 		$this->db->query("TRUNCATE TABLE  `" . DB_PREFIX  . "attribute_group_description`");
 	}
-	*/
 }
 ?>

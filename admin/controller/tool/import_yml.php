@@ -10,17 +10,16 @@ class ControllerToolImportYml extends Controller {
 		$this->document->setTitle($this->language->get('heading_title'));
         $this->load->model('tool/import_yml');
         $this->load->model('catalog/product');
-		$this->load->model('catalog/manufacturer');
-		$this->load->model('catalog/attribute');
 		$this->load->model('catalog/attribute_group');
-
+		
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && ($this->validate())) {
 
 			if ((isset( $this->request->files['upload'] )) && (is_uploaded_file($this->request->files['upload']['tmp_name']))) {
 				$file = DIR_DOWNLOAD . 'import.yml';
 				move_uploaded_file($this->request->files['upload']['tmp_name'], $file);
 				
-                $this->parseFile($file);
+				$force = (isset($this->request->post['force']) && $this->request->post['force'] == 'on');
+                $this->parseFile($file, $force);
 
                 $this->session->data['success'] = $this->language->get('text_success');
 			}
@@ -29,6 +28,7 @@ class ControllerToolImportYml extends Controller {
 		$this->data['heading_title'] = $this->language->get('heading_title');
 		$this->data['entry_restore'] = $this->language->get('entry_restore');
 		$this->data['entry_description'] = $this->language->get('entry_description');
+		$this->data['entry_force'] = $this->language->get('entry_force');
 		$this->data['button_import'] = $this->language->get('button_import');
 		$this->data['tab_general'] = $this->language->get('tab_general');
 
@@ -72,11 +72,19 @@ class ControllerToolImportYml extends Controller {
 		$this->response->setOutput($this->render());
 	}
 
-    private function parseFile($file) 
+    private function parseFile($file, $force = false) 
     {
         $xmlstr = file_get_contents($file);
         $xml = new SimpleXMLElement($xmlstr);
 
+		if ($force) {
+			$this->model_tool_import_yml->deleteCategories();
+			$this->model_tool_import_yml->deleteProducts();
+			$this->model_tool_import_yml->deleteManufactures();
+			$this->model_tool_import_yml->deleteAttributes();
+			$this->model_tool_import_yml->deleteAttributeGroups();
+		}
+		
         $this->addCategories($xml->shop->categories);
         $this->addProducts($xml->shop->offers);
 
@@ -173,10 +181,10 @@ class ControllerToolImportYml extends Controller {
 			$data = array(
                 'product_description' => array ( 
                     1 => array (
-                        'name' => $offer->name,
+                        'name' => (string)$offer->name,
                         'meta_keyword' => '',
                         'meta_description' => '',
-                        'description' => $offer->description,
+                        'description' => (string)$offer->description,
                         'tag' => '',
                         'seo_title' => '',
                         'seo_h1' => '',
@@ -189,10 +197,10 @@ class ControllerToolImportYml extends Controller {
                     $this->categoryMap[(int)$offer->categoryId],
                 ),
 				'product_attribute' => array(),
-                'model' => $offer->vendorCode,
+                'model' => (string)$offer->vendorCode,
                 'image' => $image_path,
-                'sku'   => $offer->vendorCode,
-                'keyword' => $offer->vendorCode,
+                'sku'   => (string)$offer->vendorCode,
+                'keyword' => (string)$offer->vendorCode,
                 'upc'  => '',
                 'ean'  => '',
                 'jan'  => '',
@@ -227,6 +235,13 @@ class ControllerToolImportYml extends Controller {
 						'name' => $vendor_name,
 						'sort_order' => 0,
 						'manufacturer_description' => array (
+							1 => array (
+								'meta_keyword' => '',
+								'meta_description' => '',
+								'description' => $vendor_name,
+								'seo_title' => '',
+								'seo_h1' => '',
+							)
 						),
 						'manufacturer_store' => array ( 0 ),
 					);
@@ -239,7 +254,7 @@ class ControllerToolImportYml extends Controller {
 			
 			if (isset($offer->param)) {
 				if (!is_array($offer->param)) {
-					$offer->param = array($offer->param);
+					$offer->param = array((string)$offer->param);
 				}
 				
 				foreach ($offer->param as $param) {
@@ -271,8 +286,14 @@ class ControllerToolImportYml extends Controller {
 				}
 			}
 			
-			$result = $this->db->query('SELECT product_id FROM `' . DB_PREFIX . 'product` WHERE `sku` LIKE "' . $data['sku'] . '"');
-			if ($result->row) {
+			if ($data['sku'] != '') {
+				$result = $this->db->query('SELECT product_id FROM `' . DB_PREFIX . 'product` WHERE `sku` LIKE "' . $data['sku'] . '"');
+				$row = $result->row;
+			} else {
+				$row = false;
+			}
+			
+			if ($row) {
 				$this->model_catalog_product->editProduct($result->row['product_id'], $data); 
 			} else {
 				$this->model_catalog_product->addProduct($data); 
@@ -312,7 +333,7 @@ class ControllerToolImportYml extends Controller {
     }
 
     private function validate() {
-		if (!$this->user->hasPermission('modify', 'tool/export')) {
+		if (!$this->user->hasPermission('modify', 'tool/import_yml')) {
 			$this->error['warning'] = $this->language->get('error_permission');
 		}
 		
