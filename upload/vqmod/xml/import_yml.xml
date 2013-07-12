@@ -2,7 +2,7 @@
 	<id>Import YML</id>
 	<version>1.5.3.x</version>
 	<vqmver>1.1.0</vqmver>
-	<author></author>
+	<author>Gennady Telegin, support@itxd.ru</author>
 	<file name="admin/controller/common/header.php">
 		<operation>
 			<search position="after"><![CDATA[$this->data['text_backup'] = $this->language->get('text_backup');]]></search>
@@ -13,10 +13,16 @@
 			<add><![CDATA[			$this->data['import_yml'] = $this->url->link('tool/import_yml', 'token=' . $this->session->data['token'], 'SSL');]]></add>
 		</operation>
 	</file>
-	<file name="admin/language/russian/common/header.php">
+	<file name="admin/language/english/common/header.php">
 		<operation>
 			<search position="after"><![CDATA[$_['text_backup']]]></search>
 			<add><![CDATA[$_['text_import_yml']           = 'Import YML';]]></add>
+		</operation>
+	</file>
+	<file name="admin/language/russian/common/header.php">
+		<operation>
+			<search position="after"><![CDATA[$_['text_backup']]]></search>
+			<add><![CDATA[$_['text_import_yml']           = 'Импорт YML';]]></add>
 		</operation>
 	</file>
 	<file name="admin/view/template/common/header.tpl">
