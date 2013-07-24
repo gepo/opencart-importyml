@@ -10,6 +10,9 @@ class ControllerToolImportYml extends Controller {
 		$this->document->setTitle($this->language->get('heading_title'));
         $this->load->model('tool/import_yml');
         $this->load->model('catalog/product');
+		$this->load->model('catalog/manufacturer');
+		$this->load->model('catalog/category');
+		$this->load->model('catalog/attribute');
 		$this->load->model('catalog/attribute_group');
 		
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && ($this->validate())) {
@@ -116,16 +119,27 @@ class ControllerToolImportYml extends Controller {
 					} else {
 						$category_data = array (
 							'sort_order' => 0,
-							'name' => $item['name'],
 							'parent_id' => $this->categoryMap[ (int)$item['parent_id'] ],
 							'top' => 0,
+							'status' => 1,
+							'category_description' => array (
+								1 => array(
+									'name' => $item['name'],
+									'meta_keyword' => '',
+									'meta_description' => '',
+									'description' => '',
+								)
+							),
+							'category_store' => array (
+								0
+							),
 						);
 						
 						if ($category_data['parent_id'] == 0) {
 							$category_data['top'] = 1;
 						}
 				
-						$this->categoryMap[(int)$source_category_id] = $this->model_tool_import_yml->addCategory($category_data);
+						$this->categoryMap[(int)$source_category_id] = $this->model_catalog_category->addCategory($category_data);
 					}
 					unset($categoriesList[$source_category_id]);
 				}
@@ -135,8 +149,6 @@ class ControllerToolImportYml extends Controller {
 
     private function addProducts($offers) 
     {
-        //$this->model_tool_import_yml->deleteProducts();
-
 		// get first attribute group
 		$res = $this->db->query('SELECT * FROM `' . DB_PREFIX  . 'attribute_group` ORDER BY `attribute_group_id` LIMIT 0, 1');
 		if (!$res->row) {
@@ -244,20 +256,23 @@ class ControllerToolImportYml extends Controller {
 							)
 						),
 						'manufacturer_store' => array ( 0 ),
+						'keyword' => '',
 					);
 					
-					$vendorMap[$vendor_name] = $this->model_tool_import_yml->addManufacturer($manufacturer_data);
+					$vendorMap[$vendor_name] = $this->model_catalog_manufacturer->addManufacturer($manufacturer_data);
 				}
 				
 				$data['manufacturer_id'] = $vendorMap[(string)$offer->vendor];
 			}
 			
 			if (isset($offer->param)) {
-				if (!is_array($offer->param)) {
-					$offer->param = array((string)$offer->param);
+				$params = $offer->param;
+				
+				if (!is_array($params)) {
+					$params = array((string)$params);
 				}
 				
-				foreach ($offer->param as $param) {
+				foreach ($params as $param) {
 					$attr_name = (string)$param['name'];
 					$attr_value = (string)$param;
 					
@@ -272,7 +287,7 @@ class ControllerToolImportYml extends Controller {
 							),
 						);
 						
-						$attrMap[$attr_name] = $this->model_tool_import_yml->addAttribute($attr_data);
+						$attrMap[$attr_name] = $this->model_catalog_attribute->addAttribute($attr_data);
 					}
 					
 					$data['product_attribute'][] = array (

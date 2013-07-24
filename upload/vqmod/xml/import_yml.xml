@@ -31,4 +31,55 @@
 			<add><![CDATA[        <li><a href="<?php echo $import_yml; ?>"><?php echo $text_import_yml; ?></a></li>]]></add>
 		</operation>
 	</file>
+	
+	<file name="admin/model/catalog/manufacturer.php">
+		<operation>
+			<search position="after"><![CDATA[
+			$this->cache->delete('manufacturer');
+			]]></search>
+			<add><![CDATA[
+			return $manufacturer_id;
+			]]></add>
+		</operation>
+	</file>
+	
+	<file name="admin/model/catalog/product.php">
+		<operation>
+			<search position="after"><![CDATA[
+			$this->cache->delete('product');
+			]]></search>
+			<add><![CDATA[
+			return $product_id;
+			]]></add>
+		</operation>
+	</file>
+	
+	<file name="admin/model/catalog/category.php">
+		<operation>
+			<search position="after"><![CDATA[
+			$this->cache->delete('category');
+			]]></search>
+			<add><![CDATA[
+			return $category_id;
+			]]></add>
+		</operation>
+	</file>
+	
+	<file name="admin/model/catalog/attribute_group.php">
+		<operation>
+			<search position="before" offset="2"><![CDATA[
+			public function editAttributeGroup
+			]]></search>
+			<add><![CDATA[
+			return $attribute_group_id;
+			]]></add>
+		</operation>
+	</file>
+	
+	<file name="admin/model/catalog/attribute.php">
+		<operation>
+			<search position="before" offset="2"><![CDATA[public function editAttribute]]></search>
+			<add><![CDATA[return $attribute_id;]]></add>
+		</operation>
+	</file>
 </modification>
