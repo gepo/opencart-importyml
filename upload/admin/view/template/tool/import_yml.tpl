@@ -28,7 +28,7 @@
           </tr>
           <tr>
             <td width="25%"><?php echo $entry_url; ?></td>
-            <td><input type="text" name="url" size="50" value="http://beepshop.sandbox.itxd.ru/index.php?route=feed/yandex_market" /></td>
+            <td><input type="text" name="url" size="50" /></td>
           </tr>
           <tr>
             <td width="25%"><?php echo $entry_update; ?></td>
