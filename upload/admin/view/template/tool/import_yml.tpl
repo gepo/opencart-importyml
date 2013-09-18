@@ -26,6 +26,21 @@
             <td width="25%"><?php echo $entry_restore; ?></td>
             <td><input type="file" name="upload" /></td>
           </tr>
+          <tr>
+            <td width="25%"><?php echo $entry_url; ?></td>
+            <td><input type="text" name="url" size="50" value="http://beepshop.sandbox.itxd.ru/index.php?route=feed/yandex_market" /></td>
+          </tr>
+          <tr>
+            <td width="25%"><?php echo $entry_update; ?></td>
+            <td>
+              <input type="checkbox" name="update[name]" /><?php echo $entry_name; ?><br />
+              <input type="checkbox" name="update[description]" /><?php echo $entry_description; ?><br />
+              <input type="checkbox" name="update[price]" /><?php echo $entry_price; ?><br />
+              <input type="checkbox" name="update[image]" /><?php echo $entry_image; ?><br />
+              <input type="checkbox" name="update[manufacturer]" /><?php echo $entry_manufacturer; ?><br />
+              <input type="checkbox" name="update[attributes]" /><?php echo $entry_attribute; ?><br />
+            </td>
+          </tr>
 		  <tr>
 		    <td width="25%"><?php echo $entry_force; ?></td>
 			<td><input type="checkbox" name="force" /></td>

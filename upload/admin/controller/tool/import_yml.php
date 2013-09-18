@@ -3,6 +3,8 @@ class ControllerToolImportYml extends Controller {
 	private $error = array();
 	
 	private $categoryMap = array();
+
+	private $columnsUpdate = array();
 	
 	public function index() 
     {
@@ -14,6 +16,7 @@ class ControllerToolImportYml extends Controller {
 		$this->load->model('catalog/category');
 		$this->load->model('catalog/attribute');
 		$this->load->model('catalog/attribute_group');
+		$this->load->model('localisation/language');
 		
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && ($this->validate())) {
 
@@ -22,7 +25,24 @@ class ControllerToolImportYml extends Controller {
 				move_uploaded_file($this->request->files['upload']['tmp_name'], $file);
 				
 				$force = (isset($this->request->post['force']) && $this->request->post['force'] == 'on');
+
+				if (!empty($this->request->post['update'])) {
+					$this->columnsUpdate = $this->request->post['update'];
+				}
+
                 $this->parseFile($file, $force);
+
+                $this->session->data['success'] = $this->language->get('text_success');
+			}
+
+			if (!empty($this->request->post['url'])) {
+				$force = (isset($this->request->post['force']) && $this->request->post['force'] == 'on');
+
+				if (!empty($this->request->post['update'])) {
+					$this->columnsUpdate = $this->request->post['update'];
+				}
+
+                $this->parseFile($this->request->post['url'], $force);
 
                 $this->session->data['success'] = $this->language->get('text_success');
 			}
@@ -30,8 +50,16 @@ class ControllerToolImportYml extends Controller {
 
 		$this->data['heading_title'] = $this->language->get('heading_title');
 		$this->data['entry_restore'] = $this->language->get('entry_restore');
+		$this->data['entry_url'] = $this->language->get('entry_url');
 		$this->data['entry_description'] = $this->language->get('entry_description');
 		$this->data['entry_force'] = $this->language->get('entry_force');
+		$this->data['entry_update'] = $this->language->get('entry_update');
+		$this->data['entry_name'] = $this->language->get('entry_name');
+		$this->data['entry_description'] = $this->language->get('entry_description');
+		$this->data['entry_price'] = $this->language->get('entry_price');
+		$this->data['entry_image'] = $this->language->get('entry_image');
+		$this->data['entry_manufacturer'] = $this->language->get('entry_manufacturer');
+		$this->data['entry_attribute'] = $this->language->get('entry_attribute');
 		$this->data['button_import'] = $this->language->get('button_import');
 		$this->data['tab_general'] = $this->language->get('tab_general');
 
@@ -189,19 +217,23 @@ class ControllerToolImportYml extends Controller {
                     }
                 }
             }
-			
+
+            $languages = $this->model_localisation_language->getLanguages();
+
+            foreach ($languages as $language) {
+            	$product_description[ $language['language_id'] ] = array (
+                    'name' => (string)$offer->name,
+                    'meta_keyword' => '',
+                    'meta_description' => '',
+                    'description' => (string)$offer->description,
+                    'tag' => '',
+                    'seo_title' => '',
+                    'seo_h1' => '',
+                );
+            }
+
 			$data = array(
-                'product_description' => array ( 
-                    1 => array (
-                        'name' => (string)$offer->name,
-                        'meta_keyword' => '',
-                        'meta_description' => '',
-                        'description' => (string)$offer->description,
-                        'tag' => '',
-                        'seo_title' => '',
-                        'seo_h1' => '',
-                    )
-                ),
+                'product_description' => $product_description,
                 'product_special' => array (),
                 'product_store' => array(0),
                 'main_category_id' => $this->categoryMap[(int)$offer->categoryId],
@@ -309,10 +341,12 @@ class ControllerToolImportYml extends Controller {
 			}
 			
 			if ($row) {
-				$this->model_catalog_product->editProduct($result->row['product_id'], $data); 
+				$data = $this->changeDataByColumns($result->row['product_id'], $data);
+				$this->model_catalog_product->editProduct($result->row['product_id'], $data);
 			} else {
 				$this->model_catalog_product->addProduct($data); 
 			}
+
         }
     }
 
@@ -358,5 +392,37 @@ class ControllerToolImportYml extends Controller {
 			return FALSE;
 		}
 	}
+
+	private function changeDataByColumns($product_id, $data)
+    {
+    	$productData = $this->model_catalog_product->getProduct($product_id);
+		$productAttributes = $this->model_catalog_product->getProductAttributes($product_id);
+
+		if (empty($this->columnsUpdate['name'])) {
+			$data['product_description'][1]['name'] = $productData['name'];
+		}
+
+		if (empty($this->columnsUpdate['description'])) {
+			$data['product_description'][1]['description'] = $productData['description'];
+		}
+
+		if (empty($this->columnsUpdate['price'])) {
+			$data['price'] = $productData['price'];
+		}
+
+		if (empty($this->columnsUpdate['image'])) {
+			$data['image'] = $productData['image'];
+		}
+
+		if (empty($this->columnsUpdate['manufacturer'])) {
+			$data['manufacturer_id'] = $productData['manufacturer_id'];
+		}
+
+		if (empty($this->columnsUpdate['attributes'])) {
+			$data['product_attribute'] = $productAttributes;
+		}
+
+		return $data;
+    }
 }
 ?>
