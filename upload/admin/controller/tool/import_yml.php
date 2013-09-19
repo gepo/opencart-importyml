@@ -17,8 +17,10 @@ class ControllerToolImportYml extends Controller {
 		$this->load->model('catalog/attribute');
 		$this->load->model('catalog/attribute_group');
 		$this->load->model('localisation/language');
+		$this->load->model('setting/setting');
 		
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && ($this->validate())) {
+			$this->model_setting_setting->editSetting('import_yml', $this->request->post);
 
 			if ((isset( $this->request->files['upload'] )) && (is_uploaded_file($this->request->files['upload']['tmp_name']))) {
 				$file = DIR_DOWNLOAD . 'import.yml';
@@ -424,5 +426,31 @@ class ControllerToolImportYml extends Controller {
 
 		return $data;
     }
+
+    public function cron()
+    {
+    	$this->load->language('tool/import_yml');
+        $this->load->model('tool/import_yml');
+        $this->load->model('catalog/product');
+		$this->load->model('catalog/manufacturer');
+		$this->load->model('catalog/category');
+		$this->load->model('catalog/attribute');
+		$this->load->model('catalog/attribute_group');
+		$this->load->model('localisation/language');
+		$this->load->model('setting/setting');
+
+    	$settings = $this->model_setting_setting->getSetting('import_yml');
+
+    	if (!empty($settings['url'])) {
+			$force = (isset($settings['force']) && $settings['force'] == 'on');
+
+			if (!empty($settings['update'])) {
+				$this->columnsUpdate = $settings['update'];
+			}
+
+            $this->parseFile($settings['url'], $force);
+		}
+    }
+
 }
 ?>
