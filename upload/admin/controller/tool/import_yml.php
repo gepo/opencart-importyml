@@ -18,7 +18,7 @@ class ControllerToolImportYml extends Controller {
 		$this->load->model('catalog/attribute_group');
 		$this->load->model('localisation/language');
 		$this->load->model('setting/setting');
-		
+
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && ($this->validate())) {
 			$this->model_setting_setting->editSetting('import_yml', $this->request->post);
 
@@ -62,8 +62,12 @@ class ControllerToolImportYml extends Controller {
 		$this->data['entry_image'] = $this->language->get('entry_image');
 		$this->data['entry_manufacturer'] = $this->language->get('entry_manufacturer');
 		$this->data['entry_attribute'] = $this->language->get('entry_attribute');
+		$this->data['entry_save_settings'] = $this->language->get('entry_save_settings');
 		$this->data['button_import'] = $this->language->get('button_import');
+		$this->data['button_save'] = $this->language->get('button_save');
 		$this->data['tab_general'] = $this->language->get('tab_general');
+
+		$this->data['save'] = $this->url->link('tool/import_yml/save', 'token=' . $this->session->data['token'], 'SSL');	
 
  		if (isset($this->error['warning'])) {
 			$this->data['error_warning'] = $this->error['warning'];
@@ -452,5 +456,18 @@ class ControllerToolImportYml extends Controller {
 		}
     }
 
+    public function save()
+    {
+    	$this->load->model('setting/setting');
+    	$this->load->language('tool/import_yml');
+
+    	if (($this->request->server['REQUEST_METHOD'] == 'POST') && ($this->validate())) {
+    		$this->model_setting_setting->editSetting('import_yml', $this->request->post);
+
+    		$this->session->data['success'] = $this->language->get('text_settings_success');
+    	}
+
+    	$this->redirect($this->url->link('tool/import_yml', 'token=' . $this->session->data['token'], 'SSL'));
+    }
 }
 ?>

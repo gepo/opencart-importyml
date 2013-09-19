@@ -41,10 +41,16 @@
               <input type="checkbox" name="update[attributes]" /><?php echo $entry_attribute; ?><br />
             </td>
           </tr>
-		  <tr>
-		    <td width="25%"><?php echo $entry_force; ?></td>
-			<td><input type="checkbox" name="force" /></td>
-		  </tr>
+    		  <tr>
+    		    <td width="25%"><?php echo $entry_force; ?></td>
+    			  <td><input type="checkbox" name="force" /></td>
+    		  </tr>
+          <tr>
+            <td width="25%"><?php echo $entry_save_settings; ?></td>
+            <td>
+              <a onclick="$('#form').attr('action', '<?php echo $save; ?>'); $('#form').submit();" class="button"><?php echo $button_save; ?></a>
+            </td>
+          </tr>
         </table>
       </form>
     </div>

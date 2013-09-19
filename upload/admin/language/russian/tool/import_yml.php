@@ -4,6 +4,7 @@ $_['heading_title']     = 'Импорт YML';
 
 // Text
 $_['text_success']      = 'Продукты успешно загружены';
+$_['text_settings_success'] = 'Настройки успешно сохранены';
 
 // Entry
 $_['entry_restore']     = 'Файл:';
@@ -17,6 +18,7 @@ $_['entry_price'] 		= 'Цена';
 $_['entry_image'] 		= 'Изображение товара';
 $_['entry_manufacturer'] = 'Производитель';
 $_['entry_attribute'] 	= 'Атрибуты';
+$_['entry_save_settings'] = 'Сохранить настройки без импорта:';
 
 // Error
 $_['error_permission']  = 'Внимание: У вас нет прав!';
