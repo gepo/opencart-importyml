@@ -212,17 +212,26 @@ class ControllerToolImportYml extends Controller {
 		$attrMap = $this->model_tool_import_yml->loadAttributes();
 		
         foreach ($offers->offer as $offer) {
-            $image_path = null;
-            if (is_dir(DIR_IMAGE . 'data/import_yml')) {
-                $img_name = substr(strrchr($offer->picture, '/'), 1);
-    
-                if (!empty($img_name)) {
-                    $image = $this->loadImageFromHost($offer->picture, DIR_IMAGE . 'data/import_yml/' . $img_name);
-                    if ($image) {
-                        $image_path = 'data/import_yml/' . $img_name;
-                    }
-                }
-            }
+
+            $product_images = [];
+        	foreach ($offer->picture as $picture) {
+	            $image_path = null;
+	            if (is_dir(DIR_IMAGE . 'data/import_yml')) {
+	                $img_name = substr(strrchr($picture, '/'), 1);
+	    
+	                if (!empty($img_name)) {
+	                    $image = $this->loadImageFromHost($picture, DIR_IMAGE . 'data/import_yml/' . $img_name);
+	                    if ($image) {
+	                        $image_path = 'data/import_yml/' . $img_name;
+	                        $product_images[] = array('image' => $image_path, 'sort_order' => count($product_images));
+	                    }
+	                }
+	            }
+	        }
+
+	        if (count($product_images) == 1) {
+	        	$product_images = array();
+	        }
 
             $languages = $this->model_localisation_language->getLanguages();
 
@@ -275,6 +284,7 @@ class ControllerToolImportYml extends Controller {
                 'status' => '1',
                 'tax_class_id' => '',
                 'sort_order' => '',
+                'product_image' => $product_images
            );
 
 		   if (isset($offer->vendor)) {
