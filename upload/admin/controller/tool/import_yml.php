@@ -5,6 +5,8 @@ class ControllerToolImportYml extends Controller {
 	private $categoryMap = array();
 
 	private $columnsUpdate = array();
+
+	private $skuProducts;
 	
 	public function index() 
     {
@@ -18,6 +20,13 @@ class ControllerToolImportYml extends Controller {
 		$this->load->model('catalog/attribute_group');
 		$this->load->model('localisation/language');
 		$this->load->model('setting/setting');
+
+		$result = $this->db->query('SELECT product_id, sku FROM `' . DB_PREFIX . 'product` ');
+		if (!empty($result->rows)) {
+			foreach ($result->rows as $row) {
+				$this->skuProducts[ $row['sku'] ] = $row['product_id'];
+			}
+		}
 
 		if (($this->request->server['REQUEST_METHOD'] == 'POST') && ($this->validate())) {
 			$this->model_setting_setting->editSetting('import_yml', $this->request->post);
@@ -348,17 +357,10 @@ class ControllerToolImportYml extends Controller {
 					);
 				}
 			}
-			
-			if ($data['sku'] != '') {
-				$result = $this->db->query('SELECT product_id FROM `' . DB_PREFIX . 'product` WHERE `sku` LIKE "' . $data['sku'] . '"');
-				$row = $result->row;
-			} else {
-				$row = false;
-			}
-			
-			if ($row) {
-				$data = $this->changeDataByColumns($result->row['product_id'], $data);
-				$this->model_catalog_product->editProduct($result->row['product_id'], $data);
+
+			if (isset($this->skuProducts[ (int)$data['sku'] ])) {
+				$data = $this->changeDataByColumns($this->skuProducts[ (int)$data['sku'] ], $data);
+				$this->model_catalog_product->editProduct($this->skuProducts[ (int)$data['sku'] ], $data);
 			} else {
 				$this->model_catalog_product->addProduct($data); 
 			}
