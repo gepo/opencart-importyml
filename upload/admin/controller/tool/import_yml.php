@@ -132,7 +132,7 @@ class ControllerToolImportYml extends Controller {
 		}
 		
         $this->addCategories($xml->shop->categories);
-        $this->addProducts($xml->shop->offers);
+        $this->addProducts($xml->shop->offers, $force);
 
     }
 
@@ -190,7 +190,7 @@ class ControllerToolImportYml extends Controller {
         }
     }
 
-    private function addProducts($offers) 
+    private function addProducts($offers, $force = false) 
     {
 		// get first attribute group
 		$res = $this->db->query('SELECT * FROM `' . DB_PREFIX  . 'attribute_group` ORDER BY `attribute_group_id` LIMIT 0, 1');
@@ -208,7 +208,7 @@ class ControllerToolImportYml extends Controller {
 			$attrGroupId = (int)$res->row['attribute_group_id'];
 		}
 		
-        if (is_dir(DIR_IMAGE . 'data/import_yml')) {
+        if ($force && is_dir(DIR_IMAGE . 'data/import_yml')) {
             $this->rrmdir(DIR_IMAGE . 'data/import_yml');
         }
 
