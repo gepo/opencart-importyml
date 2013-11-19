@@ -28,6 +28,10 @@ class ModelToolImportYml extends Model {
         $this->db->query("TRUNCATE TABLE  `" . DB_PREFIX  . "category`");
         $this->db->query("TRUNCATE TABLE  `" . DB_PREFIX  . "category_description`");
         $this->db->query("TRUNCATE TABLE  `" . DB_PREFIX  . "category_to_store`");
+		
+		if (version_compare(VERSION, '1.5.5', '>=')) {
+			$this->db->query("TRUNCATE TABLE  `" . DB_PREFIX  . "category_path`");
+		}
     }
 	
 	public function deleteProducts() {
