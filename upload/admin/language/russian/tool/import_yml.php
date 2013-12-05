@@ -5,7 +5,7 @@ $_['heading_title']     = 'Импорт YML';
 // Text
 $_['text_success']      = 'Успешно загружено %s товаров. Обновлено %s';
 $_['text_settings_success'] = 'Настройки успешно сохранены';
-$_['text_success_multiload'] = 'Успешно загружено %s. Обновлено %s. Всего %s из %s. Отменить загрузку <a href="%s">отмена</a>';
+$_['text_success_multiload'] = 'Успешно загружено %s. Отменить загрузку <a href="%s">отмена</a>';
 
 // Entry
 $_['entry_restore']     = 'Файл:';

@@ -43,7 +43,7 @@ class ControllerToolImportYml extends Controller {
 			if ((isset( $this->request->files['upload'] )) && (is_uploaded_file($this->request->files['upload']['tmp_name']))) {
 				move_uploaded_file($this->request->files['upload']['tmp_name'], $this->file);
 			} elseif (!empty($this->request->post['url'])) {
-				$file_content = file_get_contents($file);
+				$file_content = file_get_contents($this->request->post['url']);
 				file_put_contents($this->file, $file_content);
 			}
 			
@@ -139,17 +139,16 @@ class ControllerToolImportYml extends Controller {
 
 		if (!empty($this->settings['import_yml_file'])) {
 			$this->data['loaded'] = $this->settings['import_yml_file']['loaded'];
+			
+			if ($this->data['loaded']) {
+				$this->session->data['success'] = sprintf(
+					$this->language->get('text_success_multiload'),
+					$this->settings['import_yml_file']['loaded'],
+					$this->url->link('tool/import_yml/cancel', 'token=' . $this->session->data['token'], 'SSL')
+				);
 
-			$this->session->data['success'] = sprintf(
-				$this->language->get('text_success_multiload'),
-				$this->settings['import_yml_file']['loaded'],
-				$this->url->link('tool/import_yml/resume', 'token=' . $this->session->data['token'], 'SSL'),
-				$this->url->link('tool/import_yml/cancel', 'token=' . $this->session->data['token'], 'SSL')
-			);
-
-			$this->data['reload'] = true;
-				
-			$this->data['reload'] = true;
+				$this->data['reload'] = true;
+			}
 		}
 				
 		$this->template = 'tool/import_yml.tpl';
@@ -335,7 +334,11 @@ class ControllerToolImportYml extends Controller {
 
 			$productName = (string)$offer->name;
 			if (!$productName) {
-				$productName = (string)$offer->typePrefix . ' ' . (string)$offer->model;
+				if (isset($offer->typePrefix)) {
+					$productName = (string)$offer->typePrefix . ' ' . (string)$offer->model;
+				} else {
+					$productName = (string)$offer->model;
+				}
 			}
 			
 			$languages = $this->model_localisation_language->getLanguages();
@@ -371,11 +374,11 @@ class ControllerToolImportYml extends Controller {
 				'isbn' => '',
 				'mpn'  => '',
 				'location' => '',
-				'quantity' => '',
+				'quantity' => '999',
 				'minimum' => '',
 				'subtract' => '',
 				'stock_status_id' => ($offer['available'] == 'true')? 7:8,
-				'date_available' => '',
+				'date_available' => date('Y-m-d'),
 				'manufacturer_id' => '',
 				'shipping' => 1,
 				'price' => (float)$offer->price,
