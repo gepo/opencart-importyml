@@ -35,6 +35,7 @@
             <td>
               <input type="checkbox" name="update[name]" <?php if (isset($settings['update']['name']) && $settings['update']['name'] == 'on') { echo 'checked="checked"'; } ?>/><?php echo $entry_field_name; ?><br />
               <input type="checkbox" name="update[description]" <?php if (isset($settings['update']['description']) && $settings['update']['description'] == 'on') { echo 'checked="checked"'; } ?>/><?php echo $entry_field_description; ?><br />
+			  <input type="checkbox" name="update[category]" <?php if (isset($settings['update']['category']) && $settings['update']['category'] == 'on') { echo 'checked="checked"'; } ?>/><?php echo $entry_field_category; ?><br />
               <input type="checkbox" name="update[price]" <?php if (isset($settings['update']['price']) && $settings['update']['price'] == 'on') { echo 'checked="checked"'; } ?>/><?php echo $entry_field_price; ?><br />
               <input type="checkbox" name="update[image]" <?php if (isset($settings['update']['image']) && $settings['update']['image'] == 'on') { echo 'checked="checked"'; } ?>/><?php echo $entry_field_image; ?><br />
               <input type="checkbox" name="update[manufacturer]" <?php if (isset($settings['update']['manufacturer']) && $settings['update']['manufacturer'] == 'on') { echo 'checked="checked"'; } ?>/><?php echo $entry_field_manufacturer; ?><br />

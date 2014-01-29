@@ -90,6 +90,7 @@ class ControllerToolImportYml extends Controller {
 		$this->data['entry_update'] = $this->language->get('entry_update');
 		$this->data['entry_field_name'] = $this->language->get('entry_field_name');
 		$this->data['entry_field_description'] = $this->language->get('entry_field_description');
+		$this->data['entry_field_category'] = $this->language->get('entry_field_category');
 		$this->data['entry_field_price'] = $this->language->get('entry_field_price');
 		$this->data['entry_field_image'] = $this->language->get('entry_field_image');
 		$this->data['entry_field_manufacturer'] = $this->language->get('entry_field_manufacturer');
@@ -237,6 +238,7 @@ class ControllerToolImportYml extends Controller {
 							'category_description' => array (
 								1 => array(
 									'name' => $item['name'],
+									'meta_title' => '',
 									'meta_keyword' => '',
 									'meta_description' => '',
 									'description' => '',
@@ -346,6 +348,7 @@ class ControllerToolImportYml extends Controller {
 			foreach ($languages as $language) {
 				$product_description[ $language['language_id'] ] = array (
 					'name' => $productName,
+					'meta_title' => '',
 					'meta_keyword' => '',
 					'meta_description' => '',
 					'description' => (string)$offer->description,
@@ -392,7 +395,8 @@ class ControllerToolImportYml extends Controller {
 				'status' => '1',
 				'tax_class_id' => '',
 				'sort_order' => '',
-				'product_image' => $product_images
+				'product_image' => $product_images,
+				'product_tag' => array(), // for ocstore 1.5.1
 		   );
 
 		   if (isset($offer->vendor)) {
@@ -486,7 +490,7 @@ class ControllerToolImportYml extends Controller {
 			if ($fp) {
 				$options = array(CURLOPT_FILE => $fp,
 								 CURLOPT_HEADER => 0,
-								 CURLOPT_FOLLOWLOCATION => 1,
+								 /*CURLOPT_FOLLOWLOCATION => 1,*/
 								 CURLOPT_TIMEOUT => 60,
 							);
 
@@ -538,6 +542,11 @@ class ControllerToolImportYml extends Controller {
 			$data['product_description'][1]['description'] = $productData['description'];
 		}
 
+		if (empty($this->columnsUpdate['category'])) {
+			$productData = array_merge($productData, array('product_category' => $this->model_catalog_product->getProductCategories($product_id)));
+			$data['product_category'] = $productData['product_category'];
+		}
+		
 		if (empty($this->columnsUpdate['price'])) {
 			$data['price'] = $productData['price'];
 		}
