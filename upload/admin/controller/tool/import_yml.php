@@ -222,6 +222,8 @@ class ControllerToolImportYml extends Controller {
     
     // Compare categories level by level and create new one, if it doesn't exist
     while (count($categoriesList) > 0) {
+      $previousCount = count($categoriesList);
+      
       foreach ($categoriesList as $source_category_id => $item) {
         if (array_key_exists((int)$item['parent_id'], $this->categoryMap)) {
           $category = $this->db->query('SELECT * FROM `' . DB_PREFIX . 'category` INNER JOIN `' . DB_PREFIX . 'category_description` ON `' . DB_PREFIX . 'category_description`.category_id = `' . DB_PREFIX . 'category`.category_id WHERE parent_id = ' . (int)$this->categoryMap[$item['parent_id']] . ' AND `' . DB_PREFIX . 'category_description`.name LIKE "' . $this->db->escape($item['name']) . '"');
@@ -260,6 +262,13 @@ class ControllerToolImportYml extends Controller {
           }
           unset($categoriesList[$source_category_id]);
         }
+      }
+      
+      if (count($categoriesList) === $previousCount) {
+        break;
+        //echo("Unliked tree path:\n");
+        //print_r($categoriesList);
+        //die();
       }
     }
   }
@@ -357,6 +366,11 @@ class ControllerToolImportYml extends Controller {
         );
       }
 
+      if (!isset($this->categoryMap[(int)$offer->categoryId])) {
+        // continue;
+        die('Invalid category id = ' . (int)$offer->categoryId . ' for offer ' . $offer['id']);
+      }
+      
       $data = array(
         'product_description' => $product_description,
         'product_special' => array (),
